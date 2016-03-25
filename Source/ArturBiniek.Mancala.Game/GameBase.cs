@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace ArturBiniek.Mancala.Game
 {
@@ -8,72 +7,97 @@ namespace ArturBiniek.Mancala.Game
         protected const int NEGINF = int.MinValue + 100;
         protected const int POSINF = int.MaxValue - 100;
 
-
-        protected abstract IEnumerable<GameStateBase> Moves { get; }
+        protected abstract IEnumerable<Move> Moves { get; }
 
         protected abstract bool IsTerminal { get; }
 
         protected abstract Player CurentPlayer { get; }
 
-        protected abstract int Score { get; }
+        protected abstract int Evaluate();
 
-        protected ScoredMove NegaMax(int depth)
-        {
-            var moves = NegaMax(depth, NEGINF, POSINF);
-
-            return moves;
-        }
-
-        private ScoredMove NegaMax(int depth, int alpha, int beta)
+        private int NegaMax(int depth, int alpha, int beta, SearchController controller)
         {
             if (depth == 0 || IsTerminal)
-            {                
-                return new ScoredMove(Score);
+            {
+                return Evaluate();
             }
 
-            var bestMove = (GameStateBase)null;
-            int bestValue = NEGINF;
-            var bestScoredMove = default(ScoredMove);
-            int v;
+            controller.NodesCount++;
 
-            foreach (var move in OrderMoves(Moves))
+            var score = NEGINF;
+
+            var oldAlpha = alpha;
+            var bestMove = Move.Empty;
+            var first = true;
+
+            foreach (var move in Moves)
             {
-                var scm = NegaMax(depth - 1, -beta, -alpha);
+                MakeMove(move);
 
-                v = -scm.Value;
+                score = -NegaMax(depth - 1, -beta, -alpha, controller);
 
-                if (v > bestValue)
+                UndoMove(move);
+
+                if (controller.ShouldStop)
                 {
-                    bestValue = v;
-                    bestMove = move;
-                    bestScoredMove = scm;
+                    return 0;
                 }
 
-                alpha = Math.Max(alpha, v);
+                if (score > alpha)
+                {
+                    if (score >= beta)
+                    {
+                        if (first)
+                        {
+                            controller.FailHighFirst++;
+                        }
 
-                if (alpha >= beta) break;
+                        controller.FailHigh++;
+
+                        return beta;
+                    }
+
+                    alpha = score;
+
+                    bestMove = move;
+
+                    // UPDATE HISTORY
+                }
+
+                first = false;
             }
 
-            return new ScoredMove(bestValue, bestMove, bestScoredMove);
-        }
-
-        protected abstract IEnumerable<GameStateBase> OrderMoves(IEnumerable<GameStateBase> moves);    
-
-        protected class ScoredMove
-        {
-            public GameStateBase Move { get; private set; }
-
-            public ScoredMove Next { get; private set; }
-
-            public int Value { get; private set; }
-
-            public ScoredMove(int value, GameStateBase move = null, ScoredMove next = null)
+            if (alpha != oldAlpha)
             {
-                Value = value;
-                Move = move;
-                Next = next;
+                // STORE PV MOVE
             }
+
+            return alpha;
         }
+
+        internal abstract void UndoMove(Move move);
+
+        internal abstract void MakeMove(Move move);
+
+        public Move SearchPosition(SearchController controller)
+        {
+            var bestMove = Move.Empty;
+            var bestScore = NEGINF;
+
+            for (var curDepth = 1; curDepth <= controller.MaxDepth; curDepth++)
+            {
+
+                // AB
+
+                if (controller.ShouldStop)
+                {
+                    break;
+                }
+            }
+
+            return bestMove;
+        }
+
 
         protected Player NextPlayer(Player player)
         {
@@ -82,8 +106,13 @@ namespace ArturBiniek.Mancala.Game
 
         public enum Player
         {
-            One, 
+            One,
             Two
+        }
+
+        public class Move
+        {
+            public static readonly Move Empty = new Move();
         }
     }
 }
