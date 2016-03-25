@@ -14,9 +14,12 @@ namespace ArturBiniek.Mancala.Game
         public const int M1 = BUCKETS_PER_PLAYER;
         public const int M2 = 2 * BUCKETS_PER_PLAYER + 1;
 
+        private Random _rnd = new Random();
+
         private Player _currentPlayer;
 
         private int[,] _hashBase = new int[TOTAL, MAXSEEDS];
+        private Dictionary<Player, int> _hashBasePlayer = new Dictionary<Player, int>(2);
         private int _positionHash;
 
         protected override Player CurentPlayer
@@ -94,26 +97,63 @@ namespace ArturBiniek.Mancala.Game
 
         private void InitHash()
         {
-            var rnd = new Random();
-
             for (int i = 0; i < TOTAL; i++)
             {
                 for (int k = 0; k < MAXSEEDS; k++)
                 {
-                    _hashBase[i, k] = rnd.Next();
+                    _hashBase[i, k] = Rand32();
                 }
             }
+
+            _hashBasePlayer[Player.One] = Rand32();
+            _hashBasePlayer[Player.Two] = Rand32();
 
             for (int i = 0; i < TOTAL; i++)
             {
                 HashInOut(i);
             }
+
+            HashInOut(_currentPlayer);
+
+            Console.WriteLine(this);
+
+            HashInOut(_currentPlayer);
+
+            Console.WriteLine(this);
+
+            HashInOut(NextPlayer(_currentPlayer));
+
+            Console.WriteLine(this);
+
+            HashInOut(NextPlayer(_currentPlayer));
+
+            Console.WriteLine(this);
+
+
+            HashInOut(_currentPlayer);
+
+            Console.WriteLine(this);
+
+        }
+
+        private void HashInOut(Player player)
+        {
+            _positionHash ^= _hashBasePlayer[player];
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void HashInOut(int index)
         {
             _positionHash ^= _hashBase[index, _bucktes[index]];
+        }
+
+        private int Rand32()
+        {
+            byte[] rnds = new byte[4];
+
+            _rnd.NextBytes(rnds);
+
+            return rnds[0] | rnds[1] << 8 | rnds[2] << 16 | rnds[3] << 23;
         }
 
         private IEnumerable<Move> GenerateMoves()

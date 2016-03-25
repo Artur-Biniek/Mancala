@@ -105,8 +105,8 @@ namespace ArturBiniek.Mancala.Game
 
         public enum Player
         {
-            One,
-            Two
+            One = 101010101,
+            Two = 202020202
         }
 
         public class Move
