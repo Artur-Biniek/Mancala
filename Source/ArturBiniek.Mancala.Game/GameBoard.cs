@@ -36,7 +36,7 @@ namespace ArturBiniek.Mancala.Game
         {
             get
             {
-                throw new NotImplementedException();
+                return GenerateMoves();
             }
         }
 
@@ -55,7 +55,8 @@ namespace ArturBiniek.Mancala.Game
             throw new NotImplementedException();
         }
 
-        private int[] _bucktes;
+        private readonly int[] _bucktes;
+        private readonly int[] _opposite;
 
         public GameBoard(Player current, int[] p1buckets, int p1mancala, int[] p2bukets, int p2mancala)
         {
@@ -71,13 +72,22 @@ namespace ArturBiniek.Mancala.Game
             _bucktes[M1] = p1mancala;
             _bucktes[M2] = p2mancala;
 
+            _opposite = new int[TOTAL];
+            var ind = M2 - 1;
+            for (int i = 0; i < BUCKETS_PER_PLAYER; i++)
+            {
+                _opposite[i] = ind;
+                _opposite[ind] = i;
+                ind--;
+            }
+
             InitHash();
         }
 
         public override string ToString()
         {
             var l1 = string.Format("{0} [{1}]", string.Join("-", _bucktes.Take(BUCKETS_PER_PLAYER)), _bucktes[M1]);
-            var l2 = string.Format("{0} [{1}]", string.Join("-", _bucktes.Skip(BUCKETS_PER_PLAYER+1).Take(BUCKETS_PER_PLAYER)), _bucktes[M2]);
+            var l2 = string.Format("{0} [{1}]", string.Join("-", _bucktes.Skip(BUCKETS_PER_PLAYER + 1).Take(BUCKETS_PER_PLAYER)), _bucktes[M2]);
 
             return string.Format("{0}  |  {1}  | Current Player: {2}  | Hash: {3}", l1, l2, _currentPlayer, _positionHash);
         }
@@ -105,5 +115,55 @@ namespace ArturBiniek.Mancala.Game
         {
             _positionHash ^= _hashBase[index, _bucktes[index]];
         }
+
+        private IEnumerable<Move> GenerateMoves()
+        {
+            var normalMoves = new List<Move>();
+            var repeatMoves = new List<Move>();
+            var captureMove = new List<Move>();
+
+            int start, ownMancala, opponentMancala;
+
+            if (CurentPlayer == Player.One)
+            {
+                start = M1 - 1;
+                ownMancala = M1;
+                opponentMancala = M2;
+            }
+            else
+            {
+                start = M2 - 1;
+                ownMancala = M2;
+                opponentMancala = M1;
+            }
+
+            var end = start - BUCKETS_PER_PLAYER;
+
+
+            for (int i = start; i >= end; i--)
+            {
+                var hand = _bucktes[i];
+
+                if (hand == 0)
+                {
+                    continue;
+                }
+                else if (hand + i == ownMancala)
+                {
+                    // ADD REPEAT MOVE
+                }
+                else if (hand + i < ownMancala && _opposite[hand + i] != 0)
+                {
+                    // ADD CAPTURE MOVE
+                }
+                else
+                {
+                    // ADD NORMAL MOVE
+                }
+            }
+
+            return repeatMoves.Concat(captureMove).Concat(normalMoves);
+        }
+
     }
 }
