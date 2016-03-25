@@ -8,7 +8,9 @@ namespace ArturBiniek.Mancala.Game
 
         public readonly int MaxDepth;
 
-        public int NodesCount;
+        private int _nodesCount;
+
+        public int NodesCount { get { return _nodesCount; } }
 
         public int FailHigh;
 
@@ -17,13 +19,23 @@ namespace ArturBiniek.Mancala.Game
 
         public bool ShouldStop
         {
-            get { return DateTime.Now > _deadline; }
+            get; private set;
         }
 
         public SearchController(int maxDepth, int timeLimitInMs)
         {
             MaxDepth = maxDepth;
             _deadline = DateTime.Now.AddMilliseconds(timeLimitInMs);
+        }
+
+        public void IncrementNodes()
+        {
+            if ((NodesCount & 2047) == 0)
+            {
+                ShouldStop = DateTime.Now > _deadline;
+            }
+
+            _nodesCount++;
         }
     }
 }

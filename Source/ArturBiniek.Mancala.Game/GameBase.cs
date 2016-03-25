@@ -22,13 +22,12 @@ namespace ArturBiniek.Mancala.Game
                 return Evaluate();
             }
 
-            controller.NodesCount++;
+            controller.IncrementNodes();
 
+            var first = true;
             var score = NEGINF;
-
             var oldAlpha = alpha;
             var bestMove = Move.Empty;
-            var first = true;
 
             foreach (var move in Moves)
             {
