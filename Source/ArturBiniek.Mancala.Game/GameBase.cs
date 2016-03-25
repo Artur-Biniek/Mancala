@@ -7,7 +7,7 @@ namespace ArturBiniek.Mancala.Game
         protected const int NEGINF = int.MinValue + 100;
         protected const int POSINF = int.MaxValue - 100;
 
-        protected abstract IEnumerable<Move> Moves { get; }
+        public abstract IEnumerable<Move> Moves { get; }
 
         protected abstract bool IsTerminal { get; }
 

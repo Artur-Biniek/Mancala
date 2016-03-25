@@ -40,8 +40,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CaptureMove.cs" />
+    <Compile Include="CompoundMove.cs" />
     <Compile Include="GameBase.cs" />
     <Compile Include="GameBoard.cs" />
+    <Compile Include="MoveBase.cs" />
+    <Compile Include="NormalMove.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SearchController.cs" />
   </ItemGroup>

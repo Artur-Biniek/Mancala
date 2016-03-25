@@ -35,7 +35,7 @@ namespace ArturBiniek.Mancala.Game
             }
         }
 
-        protected override IEnumerable<Move> Moves
+        public override IEnumerable<Move> Moves
         {
             get
             {
@@ -108,34 +108,22 @@ namespace ArturBiniek.Mancala.Game
             _hashBasePlayer[Player.One] = Rand32();
             _hashBasePlayer[Player.Two] = Rand32();
 
+            RecalculateHash();
+        }
+
+        private void RecalculateHash()
+        {
+            _positionHash = 0;
+
             for (int i = 0; i < TOTAL; i++)
             {
                 HashInOut(i);
             }
 
             HashInOut(_currentPlayer);
-
-            Console.WriteLine(this);
-
-            HashInOut(_currentPlayer);
-
-            Console.WriteLine(this);
-
-            HashInOut(NextPlayer(_currentPlayer));
-
-            Console.WriteLine(this);
-
-            HashInOut(NextPlayer(_currentPlayer));
-
-            Console.WriteLine(this);
-
-
-            HashInOut(_currentPlayer);
-
-            Console.WriteLine(this);
-
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void HashInOut(Player player)
         {
             _positionHash ^= _hashBasePlayer[player];
@@ -177,7 +165,7 @@ namespace ArturBiniek.Mancala.Game
                 opponentMancala = M1;
             }
 
-            var end = start - BUCKETS_PER_PLAYER;
+            var end = start - BUCKETS_PER_PLAYER + 1;
 
 
             for (int i = start; i >= end; i--)
@@ -190,15 +178,21 @@ namespace ArturBiniek.Mancala.Game
                 }
                 else if (hand + i == ownMancala)
                 {
-                    // ADD REPEAT MOVE
+                    var compund = new CompoundMove(i);
+
+                    // modify buckets
+                    // compound.AddChildren(...)
+                    // resotre buckets
+
+                    repeatMoves.Add(compund);
                 }
-                else if (hand + i < ownMancala && _opposite[hand + i] != 0)
+                else if (hand + i < ownMancala && _bucktes[hand + i] == 0 && _bucktes[_opposite[hand + i]] != 0)
                 {
-                    // ADD CAPTURE MOVE
+                    captureMove.Add(new CaptureMove(i));
                 }
                 else
                 {
-                    // ADD NORMAL MOVE
+                    normalMoves.Add(new NormalMove(i));
                 }
             }
 

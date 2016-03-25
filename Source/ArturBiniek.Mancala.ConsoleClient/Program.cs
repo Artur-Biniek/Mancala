@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using ArturBiniek.Mancala.Game;
 
 namespace ArturBiniek.Mancala.ConsoleClient
@@ -12,7 +8,7 @@ namespace ArturBiniek.Mancala.ConsoleClient
         static void Main(string[] args)
         {
             var p1m = 7;
-            var p1 = new[] { 1, 2, 3, 4, 5, 6 };
+            var p1 = new[] { 1, 0, 4, 3, 5, 6 };
 
             var p2m = 8;
             var p2 = new[] { 9, 10, 11, 12, 13, 14 };
@@ -20,6 +16,11 @@ namespace ArturBiniek.Mancala.ConsoleClient
             var gb = new GameBoard(GameStateBase.Player.One, p1, p1m, p2, p2m);
 
             Console.WriteLine(gb);
+
+            foreach (var moe in gb.Moves)
+            {
+                Console.WriteLine(moe);
+            }
         }
     }
 }
