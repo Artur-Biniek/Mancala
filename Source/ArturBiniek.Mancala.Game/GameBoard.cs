@@ -13,6 +13,7 @@ namespace ArturBiniek.Mancala.Game
         public const int TOTAL = 2 * BUCKETS_PER_PLAYER + 2;
         public const int M1 = BUCKETS_PER_PLAYER;
         public const int M2 = 2 * BUCKETS_PER_PLAYER + 1;
+        private const int MOVES_PER_POSITION = BUCKETS_PER_PLAYER;
 
         private Random _rnd = new Random();
 
@@ -64,9 +65,10 @@ namespace ArturBiniek.Mancala.Game
         {
             get
             {
-                var moves = GenerateMoves().ToList();
+                _moves = GenerateMoves().ToArray();
+                _moveScores = new int[_moves.Length];
 
-                return moves;
+                for (int i = 0; i < _moves.)
             }
         }
 
@@ -97,7 +99,8 @@ namespace ArturBiniek.Mancala.Game
             var capture = move as CaptureMove;
             var compound = move as CompoundMove;
 
-            baseMove.StoreHistory(_bucktes, _currentPlayer, _positionHash);
+            _ply++;
+            baseMove.StoreHistory(_bucktes, _currentPlayer);
 
             var landingBucketIndex = TransferBeans(baseMove.BucketIndex);
 
@@ -125,11 +128,16 @@ namespace ArturBiniek.Mancala.Game
 
         public override void UndoMove(Move move)
         {
+            _ply--;
             (move as Game.MoveBase).RetoreHistory(ref _bucktes, ref _currentPlayer, ref _positionHash);
         }
 
         private readonly int[] _opposite;
         private int[] _bucktes;
+        private int _ply;
+
+        private MoveBase[] _moves = new MoveBase[MOVES_PER_POSITION];
+        private int[] _moveScores = new int[MOVES_PER_POSITION];
 
         public GameBoard(Player current, int[] p1buckets, int p1mancala, int[] p2bukets, int p2mancala)
         {
@@ -159,9 +167,7 @@ namespace ArturBiniek.Mancala.Game
 
         public MoveBase FindMove()
         {
-            var controller = new SearchController(POSINF, 2500, 10000);
-
-            var res = (MoveBase)SearchPosition(controller);
+            var res = (MoveBase)SearchPosition();
 
             return res;
         }
@@ -270,26 +276,24 @@ namespace ArturBiniek.Mancala.Game
                     {
                         foreach (var kid in GenerateMoves())
                         {
-                            repeatMoves.Add(new CompoundMove(i, kid));
+                            repeatMoves.Add(new CompoundMove(i, PosKey, kid));
                         }
                     }
                     else
                     {
-                        normalMoves.Add(new NormalMove(i));
+                        normalMoves.Add(new NormalMove(i, PosKey));
                     }
 
                     // resotre buckets
                     _bucktes = backup;
-
-
                 }
                 else if (hand + i < ownMancala && _bucktes[hand + i] == 0 && _bucktes[_opposite[hand + i]] != 0)
                 {
-                    captureMove.Add(new CaptureMove(i));
+                    captureMove.Add(new CaptureMove(i, PosKey));
                 }
                 else
                 {
-                    normalMoves.Add(new NormalMove(i));
+                    normalMoves.Add(new NormalMove(i, PosKey));
                 }
             }
 

@@ -4,14 +4,14 @@
     {
         public readonly MoveBase Kid;
 
-        public CompoundMove(int index, MoveBase kid) : base(index)
+        public CompoundMove(int index, int posKey, MoveBase kid) : base(index, posKey)
         {
             Kid = kid;
         }
 
         public override string ToString()
         {
-            return base.ToString() + " : (" + Kid + ")";
+            return string.Format("R{0}({1})", BucketIndex, Kid);
         }
     }
 }

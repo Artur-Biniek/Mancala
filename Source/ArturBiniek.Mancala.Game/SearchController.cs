@@ -1,14 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ArturBiniek.Mancala.Game
 {
     public class SearchController
     {
-        private readonly DateTime _deadline;
+        private DateTime _deadline;
 
-        public readonly int MaxDepth;
+        public int MaxDepth
+        {
+            get; private set;
+        }
 
-        public readonly PvTable PvTable;
+        public PvTable PvTable;
+
+        public IEnumerable<GameStateBase.Move> PvLine;
 
         private int _nodesCount;
 
@@ -17,7 +23,8 @@ namespace ArturBiniek.Mancala.Game
         public int FailHigh;
 
         public int FailHighFirst;
-
+        private int _timeInMs;
+        private int _pvSize;
 
         public bool ShouldStop
         {
@@ -27,8 +34,10 @@ namespace ArturBiniek.Mancala.Game
         public SearchController(int maxDepth, int timeLimitInMs, int pvSize)
         {
             MaxDepth = maxDepth;
-            _deadline = DateTime.Now.AddMilliseconds(timeLimitInMs);
-            PvTable = new PvTable(pvSize);
+            _timeInMs = timeLimitInMs;
+            _pvSize = pvSize;
+            _deadline = DateTime.Now.AddMilliseconds(_timeInMs);
+            PvTable = new PvTable(_pvSize);
         }
 
         public void IncrementNodes()
@@ -39,6 +48,13 @@ namespace ArturBiniek.Mancala.Game
             }
 
             _nodesCount++;
+        }
+
+        public void Reset()
+        {
+            ShouldStop = false;
+            _deadline = DateTime.Now.AddMilliseconds(_timeInMs);
+            PvTable = new PvTable(_pvSize);
         }
     }
 }

@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace ArturBiniek.Mancala.Game
 {
     public class PvTable
     {
         private readonly PvEntry[] _entries;
+
 
         public PvTable(int maxEntries)
         {
@@ -30,7 +32,7 @@ namespace ArturBiniek.Mancala.Game
         {
             var index = posKey % _entries.Length;
 
-            _entries[index] = new PvEntry(posKey, move); 
+            _entries[index] = new PvEntry(posKey, move);
         }
 
         private class PvEntry

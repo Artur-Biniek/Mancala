@@ -18,11 +18,6 @@ namespace ArturBiniek.Mancala.ConsoleClient
             var gb = new GameBoard(GameStateBase.Player.One, p1, p1m, p2, p2m);
             Console.WriteLine(gb);
 
-            foreach (var m in gb.Moves)
-                Console.WriteLine(m);
-
-            Console.WriteLine(gb.FindMove());
-
             var sw = new Stopwatch();
             var rnd = new Random();
 
@@ -42,6 +37,8 @@ namespace ArturBiniek.Mancala.ConsoleClient
                 sw.Stop();
                 Console.WriteLine(gb);
                 Console.WriteLine(":::::::::::::::::::::: {0} :::::::::::::::::::::::", sw.ElapsedMilliseconds);
+
+                controller.Reset();
             }
         }
     }
