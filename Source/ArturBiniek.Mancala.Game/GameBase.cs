@@ -205,67 +205,11 @@ namespace ArturBiniek.Mancala.Game
                 lastDepth = curDepth;
 
                 bestMove = _controller.PvTable.Probe(PosKey);
+            }         
 
-                var posKey = PosKey;
-                _controller.PvLine = GetPvLine(_controller, curDepth);
-
-                if (posKey != PosKey) throw new Exception("Oj oj oj");
-            }
-
-            if (_controller.PvLine.Count() != lastDepth)
-            {
-                var g = 5;
-            }
-
-            Console.WriteLine("D:{0}, Best:{1}, Nodes:{2}, Ordering:{3:P2}", curDepth, string.Join("->", _controller.PvLine), _controller.NodesCount, (double)_controller.FailHighFirst / _controller.FailHigh);
+            Console.WriteLine("D:{0}, Best:{1}, Nodes:{2}, Ordering:{3:P2}", curDepth, bestMove, _controller.NodesCount, (double)_controller.FailHighFirst / _controller.FailHigh);
 
             return bestMove;
-        }
-
-        public IEnumerable<GameStateBase.Move> GetPvLine(SearchController controller, int depth)
-        {
-            var res = new List<GameStateBase.Move>(depth);
-            var move = controller.PvTable.Probe(PosKey);
-            var cnt = 0;
-
-            while (move != GameStateBase.Move.Empty && cnt < depth)
-            {
-                var exists = MoveExists(move);
-
-                if (exists)
-                {
-                    MakeMoveInternal(move);
-
-                    res.Add(move);
-                    cnt++;
-                }
-                else
-                {
-                    break;
-                }
-
-                move = controller.PvTable.Probe(PosKey);
-            }
-
-            for (int i = res.Count - 1; i >= 0; i--)
-                UndoMoveInternal(res[i]);
-
-            return res;
-        }
-
-        private bool MoveExists(Move move)
-        {
-            GenerateMoves();
-
-            for (int moveInd = _moveBoundries[_ply]; moveInd < _moveBoundries[_ply + 1]; moveInd++)
-            {
-                if (_moves[moveInd] != null && _moves[moveInd].Equals(move))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         protected Player NextPlayer(Player player)

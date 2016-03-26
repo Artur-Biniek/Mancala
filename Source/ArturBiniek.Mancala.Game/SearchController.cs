@@ -15,8 +15,6 @@ namespace ArturBiniek.Mancala.Game
 
         public PvTable PvTable;
 
-        public IEnumerable<GameStateBase.Move> PvLine;
-
         private int _nodesCount;
 
         public int NodesCount { get { return _nodesCount; } }
@@ -55,8 +53,7 @@ namespace ArturBiniek.Mancala.Game
         {
             ShouldStop = false;
             _deadline = DateTime.Now.AddMilliseconds(_timeInMs);
-            PvTable = new PvTable(_pvSize);
-            PvLine = Enumerable.Empty<GameStateBase.Move>();
+            PvTable = new PvTable(_pvSize);           
         }
     }
 }
