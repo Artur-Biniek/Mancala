@@ -66,14 +66,12 @@ namespace ArturBiniek.Mancala.Game
                 _currentPlayer = NextPlayer(CurentPlayer);
             }
             else if (capture != null)
-            {
-                var mancala = CurentPlayer == Player.One ? M1 : M2;
+            {                 
                 var oppositeBucketIndex = _opposite[landingBucketIndex];
                 var captucredBeans = _bucktes[oppositeBucketIndex];
 
                 _bucktes[oppositeBucketIndex] = 0;
-                _bucktes[landingBucketIndex] = 0;
-                _bucktes[mancala] += (captucredBeans + 1); // landing bucket bean and opposite beans
+                _bucktes[landingBucketIndex] += captucredBeans;               
 
                 _currentPlayer = NextPlayer(CurentPlayer);
             }
