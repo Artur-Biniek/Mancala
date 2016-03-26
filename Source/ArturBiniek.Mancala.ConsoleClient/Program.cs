@@ -21,6 +21,8 @@ namespace ArturBiniek.Mancala.ConsoleClient
             var sw = new Stopwatch();
             var rnd = new Random();
 
+            var ind = 0;
+
             while (!gb.IsTerminal)
             {
                 sw.Reset();
@@ -28,17 +30,19 @@ namespace ArturBiniek.Mancala.ConsoleClient
 
                 var mcnt = gb.Moves.Count();
 
-                var nextMove = gb.CurentPlayer == GameStateBase.Player.Two ? gb.FindMove() : gb.Moves.Skip(rnd.Next(mcnt) - 1).First();
+                var nextMove = gb.FindMove();
 
-                Console.WriteLine("Making move: {0}", nextMove);
+                sw.Stop();
+
+                Console.WriteLine("[{1}] Making move: {0}", nextMove, ind);
 
                 gb.MakeMove(nextMove);
 
-                sw.Stop();
+
                 Console.WriteLine(gb);
                 Console.WriteLine(":::::::::::::::::::::: {0} :::::::::::::::::::::::", sw.ElapsedMilliseconds);
 
-                controller.Reset();
+                ind++;
             }
         }
     }

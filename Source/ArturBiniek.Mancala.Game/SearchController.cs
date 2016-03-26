@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace ArturBiniek.Mancala.Game
 {
@@ -55,6 +56,7 @@ namespace ArturBiniek.Mancala.Game
             ShouldStop = false;
             _deadline = DateTime.Now.AddMilliseconds(_timeInMs);
             PvTable = new PvTable(_pvSize);
+            PvLine = Enumerable.Empty<GameStateBase.Move>();
         }
     }
 }

@@ -13,7 +13,8 @@ namespace ArturBiniek.Mancala.Game
         public const int TOTAL = 2 * BUCKETS_PER_PLAYER + 2;
         public const int M1 = BUCKETS_PER_PLAYER;
         public const int M2 = 2 * BUCKETS_PER_PLAYER + 1;
-        private const int MOVES_PER_POSITION = BUCKETS_PER_PLAYER;
+        private const int MOVES_PER_POSITION = 100;
+        private const int MAX_DEPTH = 64;
 
         private Random _rnd = new Random();
 
@@ -65,10 +66,7 @@ namespace ArturBiniek.Mancala.Game
         {
             get
             {
-                _moves = GenerateMoves().ToArray();
-                _moveScores = new int[_moves.Length];
-
-                for (int i = 0; i < _moves.)
+                return GetMovesForCurrentPosition();
             }
         }
 
@@ -99,7 +97,6 @@ namespace ArturBiniek.Mancala.Game
             var capture = move as CaptureMove;
             var compound = move as CompoundMove;
 
-            _ply++;
             baseMove.StoreHistory(_bucktes, _currentPlayer);
 
             var landingBucketIndex = TransferBeans(baseMove.BucketIndex);
@@ -128,18 +125,14 @@ namespace ArturBiniek.Mancala.Game
 
         public override void UndoMove(Move move)
         {
-            _ply--;
             (move as Game.MoveBase).RetoreHistory(ref _bucktes, ref _currentPlayer, ref _positionHash);
         }
 
         private readonly int[] _opposite;
         private int[] _bucktes;
-        private int _ply;
 
-        private MoveBase[] _moves = new MoveBase[MOVES_PER_POSITION];
-        private int[] _moveScores = new int[MOVES_PER_POSITION];
 
-        public GameBoard(Player current, int[] p1buckets, int p1mancala, int[] p2bukets, int p2mancala)
+        public GameBoard(Player current, int[] p1buckets, int p1mancala, int[] p2bukets, int p2mancala) : base(MOVES_PER_POSITION, MAX_DEPTH)
         {
             _bucktes = new int[TOTAL];
             _currentPlayer = current;
@@ -229,7 +222,7 @@ namespace ArturBiniek.Mancala.Game
             return rnds[0] | rnds[1] << 8 | rnds[2] << 16 | rnds[3] << 23;
         }
 
-        private IEnumerable<Game.MoveBase> GenerateMoves()
+        private IEnumerable<Game.MoveBase> GetMovesForCurrentPosition()
         {
             var normalMoves = new List<Game.MoveBase>();
             var repeatMoves = new List<Game.MoveBase>();
@@ -270,11 +263,11 @@ namespace ArturBiniek.Mancala.Game
                     // modify buckets
                     TransferBeans(i);
 
-                    var kids = GenerateMoves().ToList();
+                    var kids = GetMovesForCurrentPosition().ToList();
 
                     if (kids.Count > 0)
                     {
-                        foreach (var kid in GenerateMoves())
+                        foreach (var kid in GetMovesForCurrentPosition())
                         {
                             repeatMoves.Add(new CompoundMove(i, PosKey, kid));
                         }

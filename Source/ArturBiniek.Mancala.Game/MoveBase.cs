@@ -6,8 +6,8 @@ namespace ArturBiniek.Mancala.Game
     {
         public readonly int BucketIndex;
         private int[] _savedBuckets;
-        private GameStateBase.Player _savedPlayer;
-        private int _savedHash;
+        protected GameStateBase.Player _savedPlayer;
+        protected int _savedHash;
 
         public MoveBase(int bucketIndex, int posKey)
         {

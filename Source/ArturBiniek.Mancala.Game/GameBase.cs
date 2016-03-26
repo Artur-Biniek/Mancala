@@ -6,7 +6,6 @@ namespace ArturBiniek.Mancala.Game
 {
     public abstract class GameStateBase
     {
-        protected const int MAX_DEPTH = 64;
         protected const int PV_SIZE = 10000;
         protected const int TIME_LIMIT = 2500;
         protected const int NEGINF = int.MinValue + 100;
@@ -27,7 +26,7 @@ namespace ArturBiniek.Mancala.Game
         {
             controller.IncrementNodes();
 
-            if (depth == 0 || IsTerminal)
+            if (depth <= 0 || IsTerminal)
             {
                 return Evaluate();
             }
@@ -37,13 +36,41 @@ namespace ArturBiniek.Mancala.Game
             var oldAlpha = alpha;
             var bestMove = Move.Empty;
 
-            foreach (var move in Moves)
+            GenerateMoves();
+
+            var pvMove = _controller.PvTable.Probe(PosKey);
+
+            if (pvMove != Move.Empty)
             {
-                MakeMove(move);
+                for (int moveInd = _moveBoundries[_ply]; moveInd < _moveBoundries[_ply + 1]; moveInd++)
+                {
+                    var move = _moves[moveInd];
+
+                    if (move.Equals(pvMove))
+                    {
+                        _moveScores[moveInd] = 1000000;
+                        break;
+                    }
+                }
+            }
+
+            for (int moveInd = _moveBoundries[_ply]; moveInd < _moveBoundries[_ply + 1]; moveInd++)
+            {
+                PickNextMove(moveInd);
+
+                var move = _moves[moveInd];
+
+                var hash = PosKey;
+                MakeMoveInternal(move);
 
                 score = -NegaMax(depth - 1, -beta, -alpha, controller);
 
-                UndoMove(move);
+                UndoMoveInternal(move);
+
+                if (hash != PosKey)
+                {
+                    throw new Exception("Position key error!");
+                }
 
                 if (controller.ShouldStop)
                 {
@@ -67,8 +94,6 @@ namespace ArturBiniek.Mancala.Game
                     alpha = score;
 
                     bestMove = move;
-
-                    // UPDATE HISTORY
                 }
 
                 first = false;
@@ -82,9 +107,78 @@ namespace ArturBiniek.Mancala.Game
             return alpha;
         }
 
-        public GameStateBase()
+        private void UndoMoveInternal(Move move)
         {
-            _controller = new SearchController(MAX_DEPTH, TIME_LIMIT, PV_SIZE);
+            UndoMove(move);
+
+            _ply--;
+        }
+
+        private void MakeMoveInternal(Move move)
+        {
+            _ply++;
+
+            MakeMove(move);
+        }
+
+        private void PickNextMove(int moveNum)
+        {
+            int index = 0;
+            int bestScore = -1;
+            int bestNum = moveNum;
+
+            for (index = moveNum; index < _moveBoundries[_ply + 1]; index++)
+            {
+                if (_moveScores[index] > bestScore)
+                {
+                    bestScore = _moveScores[index];
+                    bestNum = index;
+                }
+            }
+
+            if (bestNum != moveNum)
+            {
+                var tmp = _moveScores[moveNum];
+                _moveScores[moveNum] = _moveScores[bestNum];
+                _moveScores[bestNum] = tmp;
+
+                var tmp2 = _moves[moveNum];
+                _moves[moveNum] = _moves[bestNum];
+                _moves[bestNum] = tmp2;
+            }
+        }
+
+        private void GenerateMoves()
+        {
+            var moveIndex = _moveBoundries[_ply];
+
+            var moves = Moves.ToList();
+            var score = moves.Count;
+
+            foreach (var move in Moves)
+            {
+                _moves[moveIndex] = move;
+                _moveScores[moveIndex] = score;
+
+                moveIndex++;
+                score--;
+            }
+
+            _moveBoundries[_ply + 1] = moveIndex;
+        }
+
+        private Move[] _moves;
+        private int[] _moveScores;
+        private int[] _moveBoundries;
+        private int _ply;
+
+        public GameStateBase(int movesPerPosition, int maxDepth)
+        {
+            _controller = new SearchController(maxDepth, TIME_LIMIT, PV_SIZE);
+
+            _moves = new MoveBase[movesPerPosition * maxDepth];
+            _moveScores = new int[movesPerPosition * maxDepth];
+            _moveBoundries = new int[maxDepth + 1];
         }
 
         public abstract void UndoMove(Move move);
@@ -96,7 +190,8 @@ namespace ArturBiniek.Mancala.Game
             var bestMove = Move.Empty;
             var bestScore = NEGINF;
             var curDepth = 1;
-            _controller.PvLine = Enumerable.Empty<Move>();
+            var lastDepth = 0;
+            _controller.Reset();
 
             for (; curDepth <= _controller.MaxDepth; curDepth++)
             {
@@ -107,17 +202,20 @@ namespace ArturBiniek.Mancala.Game
                     break;
                 }
 
+                lastDepth = curDepth;
+
                 bestMove = _controller.PvTable.Probe(PosKey);
 
                 var posKey = PosKey;
                 _controller.PvLine = GetPvLine(_controller, curDepth);
 
                 if (posKey != PosKey) throw new Exception("Oj oj oj");
-
-                if (_controller.PvLine.Count() < 1) throw new Exception("Pv Line Empty!!!!");
             }
 
-
+            if (_controller.PvLine.Count() != lastDepth)
+            {
+                var g = 5;
+            }
 
             Console.WriteLine("D:{0}, Best:{1}, Nodes:{2}, Ordering:{3:P2}", curDepth, string.Join("->", _controller.PvLine), _controller.NodesCount, (double)_controller.FailHighFirst / _controller.FailHigh);
 
@@ -132,11 +230,11 @@ namespace ArturBiniek.Mancala.Game
 
             while (move != GameStateBase.Move.Empty && cnt < depth)
             {
-                var exists = Moves.FirstOrDefault(m => m.Equals(move)) != null;
+                var exists = MoveExists(move);
 
                 if (exists)
                 {
-                    MakeMove(move);
+                    MakeMoveInternal(move);
 
                     res.Add(move);
                     cnt++;
@@ -150,9 +248,24 @@ namespace ArturBiniek.Mancala.Game
             }
 
             for (int i = res.Count - 1; i >= 0; i--)
-                UndoMove(res[i]);
+                UndoMoveInternal(res[i]);
 
             return res;
+        }
+
+        private bool MoveExists(Move move)
+        {
+            GenerateMoves();
+
+            for (int moveInd = _moveBoundries[_ply]; moveInd < _moveBoundries[_ply + 1]; moveInd++)
+            {
+                if (_moves[moveInd] != null && _moves[moveInd].Equals(move))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         protected Player NextPlayer(Player player)

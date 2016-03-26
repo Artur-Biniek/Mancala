@@ -7,6 +7,8 @@ namespace ArturBiniek.Mancala.Game
     {
         private readonly PvEntry[] _entries;
 
+        public int Count { get; private set; }
+
 
         public PvTable(int maxEntries)
         {
@@ -31,6 +33,15 @@ namespace ArturBiniek.Mancala.Game
         public void Store(int posKey, GameStateBase.Move move)
         {
             var index = posKey % _entries.Length;
+
+            if (_entries[index] == null)
+            {
+                Count++;
+            }
+            else
+            {
+                var collisyy = 5;
+            }
 
             _entries[index] = new PvEntry(posKey, move);
         }
