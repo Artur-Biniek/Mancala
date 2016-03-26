@@ -8,10 +8,10 @@ namespace ArturBiniek.Mancala.ConsoleClient
         static void Main(string[] args)
         {
             var p1m = 0;
-            var p1 = new[] { 1, 0, 1 };
+            var p1 = new[] { 0, 0, 1 };
 
             var p2m = 0;
-            var p2 = new[] { 2, 3, 4 };
+            var p2 = new[] { 0, 0, 0 };
 
             var gb = new GameBoard(GameStateBase.Player.One, p1, p1m, p2, p2m);
 

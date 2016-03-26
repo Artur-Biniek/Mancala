@@ -31,7 +31,27 @@ namespace ArturBiniek.Mancala.Game
         {
             get
             {
-                throw new NotImplementedException();
+                var p1Empty = true;
+                for (int i = 0; i < M1; i++)
+                {
+                    if (_bucktes[i] != 0)
+                    {
+                        p1Empty = false;
+                        break;
+                    }
+                }
+
+                if (p1Empty) return true;
+
+                for (int i = M1 + 1; i < M2; i++)
+                {
+                    if (_bucktes[i] != 0)
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         }
 
@@ -66,12 +86,12 @@ namespace ArturBiniek.Mancala.Game
                 _currentPlayer = NextPlayer(CurentPlayer);
             }
             else if (capture != null)
-            {                 
+            {
                 var oppositeBucketIndex = _opposite[landingBucketIndex];
                 var captucredBeans = _bucktes[oppositeBucketIndex];
 
                 _bucktes[oppositeBucketIndex] = 0;
-                _bucktes[landingBucketIndex] += captucredBeans;               
+                _bucktes[landingBucketIndex] += captucredBeans;
 
                 _currentPlayer = NextPlayer(CurentPlayer);
             }
@@ -122,7 +142,7 @@ namespace ArturBiniek.Mancala.Game
             var l1 = string.Format("{0} [{1}]", string.Join("-", _bucktes.Take(BUCKETS_PER_PLAYER)), _bucktes[M1]);
             var l2 = string.Format("{0} [{1}]", string.Join("-", _bucktes.Skip(BUCKETS_PER_PLAYER + 1).Take(BUCKETS_PER_PLAYER)), _bucktes[M2]);
 
-            return string.Format("{0}  |  {1}  | Current Player: {2}  | Hash: {3}", l1, l2, _currentPlayer, _positionHash);
+            return string.Format("{0}  |  {1}  | Current Player: {2}  | Hash: {3} | Terminal: {4}", l1, l2, _currentPlayer, _positionHash, IsTerminal);
         }
 
         private void InitHash()
