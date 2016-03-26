@@ -9,11 +9,11 @@ namespace ArturBiniek.Mancala.Game
 
         public abstract IEnumerable<Move> Moves { get; }
 
-        protected abstract bool IsTerminal { get; }
+        public abstract bool IsTerminal { get; }
 
-        protected abstract Player CurentPlayer { get; }
+        public abstract Player CurentPlayer { get; }
 
-        protected abstract int Evaluate();
+        public abstract int Evaluate();
 
         private int NegaMax(int depth, int alpha, int beta, SearchController controller)
         {

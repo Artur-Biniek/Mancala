@@ -22,12 +22,12 @@ namespace ArturBiniek.Mancala.Game
         private Dictionary<Player, int> _hashBasePlayer = new Dictionary<Player, int>(2);
         private int _positionHash;
 
-        protected override Player CurentPlayer
+        public override Player CurentPlayer
         {
             get { return _currentPlayer; }
         }
 
-        protected override bool IsTerminal
+        public override bool IsTerminal
         {
             get
             {
@@ -65,9 +65,24 @@ namespace ArturBiniek.Mancala.Game
             }
         }
 
-        protected override int Evaluate()
+        public override int Evaluate()
         {
-            throw new NotImplementedException();
+            var p1beans = _bucktes[M1];
+            var p2beans = _bucktes[M2];
+
+            for (int i = 0; i < M1; i++)
+            {
+                p1beans += _bucktes[i];
+            }
+
+            for (int i = M1 + 1; i < M2; i++)
+            {
+                p2beans += _bucktes[i];
+            }
+
+            var score = p1beans - p2beans;
+
+            return _currentPlayer == Player.One ? score : -score;
         }
 
         public override void MakeMove(Move move)
@@ -142,7 +157,7 @@ namespace ArturBiniek.Mancala.Game
             var l1 = string.Format("{0} [{1}]", string.Join("-", _bucktes.Take(BUCKETS_PER_PLAYER)), _bucktes[M1]);
             var l2 = string.Format("{0} [{1}]", string.Join("-", _bucktes.Skip(BUCKETS_PER_PLAYER + 1).Take(BUCKETS_PER_PLAYER)), _bucktes[M2]);
 
-            return string.Format("{0}  |  {1}  | Current Player: {2}  | Hash: {3} | Terminal: {4}", l1, l2, _currentPlayer, _positionHash, IsTerminal);
+            return string.Format("{0}  |  {1}  | Current Player: {2}  | Hash: {3} | Terminal: {4} | Eval: {5}", l1, l2, _currentPlayer, _positionHash, IsTerminal, Evaluate());
         }
 
         private void InitHash()

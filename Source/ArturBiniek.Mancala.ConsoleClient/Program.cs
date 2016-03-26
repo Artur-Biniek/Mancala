@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using ArturBiniek.Mancala.Game;
 
 namespace ArturBiniek.Mancala.ConsoleClient
@@ -8,31 +9,23 @@ namespace ArturBiniek.Mancala.ConsoleClient
         static void Main(string[] args)
         {
             var p1m = 0;
-            var p1 = new[] { 0, 0, 1 };
+            var p1 = new[] { 2, 2, 2 };
 
             var p2m = 0;
-            var p2 = new[] { 0, 0, 0 };
+            var p2 = new[] { 2, 2, 2 };
 
             var gb = new GameBoard(GameStateBase.Player.One, p1, p1m, p2, p2m);
-
             Console.WriteLine(gb);
 
-            foreach (var moe in gb.Moves)
+            while (!gb.IsTerminal)
             {
-                Console.WriteLine(moe);
-            }
+                var nextMove = gb.Moves.First();
 
+                Console.WriteLine("Making move: {0}", nextMove);
 
-            Console.WriteLine("\n::::::::::::::::::::::::::::::::::::::::::::::\n");
+                gb.MakeMove(nextMove);
 
-
-            foreach (var moe in gb.Moves)
-            {
-                gb.MakeMove(moe);
-                Console.WriteLine("Making move: {0}\n -> {1}", moe, gb);
-                gb.UndoMove(moe);
-                Console.WriteLine("Undoing move: {0}\n -> {1}", moe, gb);
-                Console.WriteLine("------------------------------------");
+                Console.WriteLine(gb);
             }
         }
     }
