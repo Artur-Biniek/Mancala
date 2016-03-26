@@ -74,9 +74,9 @@ namespace ArturBiniek.Mancala.Game
             return alpha;
         }
 
-        internal abstract void UndoMove(Move move);
+        public abstract void UndoMove(Move move);
 
-        internal abstract void MakeMove(Move move);
+        public abstract void MakeMove(Move move);
 
         public Move SearchPosition(SearchController controller)
         {

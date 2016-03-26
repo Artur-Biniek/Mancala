@@ -8,7 +8,7 @@ namespace ArturBiniek.Mancala.Game
     public class GameBoard : GameStateBase
     {
         public const int SEEDS_PER_BUCKET = 4;
-        public const int BUCKETS_PER_PLAYER = 6;
+        public const int BUCKETS_PER_PLAYER = 3;
         public const int MAXSEEDS = 2 * SEEDS_PER_BUCKET * BUCKETS_PER_PLAYER;
         public const int TOTAL = 2 * BUCKETS_PER_PLAYER + 2;
         public const int M1 = BUCKETS_PER_PLAYER;
@@ -39,7 +39,9 @@ namespace ArturBiniek.Mancala.Game
         {
             get
             {
-                return GenerateMoves();
+                var moves = GenerateMoves().ToList();
+
+                return moves;
             }
         }
 
@@ -48,18 +50,48 @@ namespace ArturBiniek.Mancala.Game
             throw new NotImplementedException();
         }
 
-        internal override void MakeMove(Move move)
+        public override void MakeMove(Move move)
         {
-            throw new NotImplementedException();
+            var baseMove = move as MoveBase;
+            var norm = move as NormalMove;
+            var capture = move as CaptureMove;
+            var compound = move as CompoundMove;
+
+            baseMove.StoreHistory(_bucktes, _currentPlayer, _positionHash);
+
+            var landingBucketIndex = TransferBeans(baseMove.BucketIndex);
+
+            if (norm != null)
+            {
+                _currentPlayer = NextPlayer(CurentPlayer);
+            }
+            else if (capture != null)
+            {
+                var mancala = CurentPlayer == Player.One ? M1 : M2;
+                var oppositeBucketIndex = _opposite[landingBucketIndex];
+                var captucredBeans = _bucktes[oppositeBucketIndex];
+
+                _bucktes[oppositeBucketIndex] = 0;
+                _bucktes[landingBucketIndex] = 0;
+                _bucktes[mancala] += (captucredBeans + 1); // landing bucket bean and opposite beans
+
+                _currentPlayer = NextPlayer(CurentPlayer);
+            }
+            else if (compound != null)
+            {
+                MakeMove(compound.Kid);
+            }
+
+            RecalculateHash();
         }
 
-        internal override void UndoMove(Move move)
+        public override void UndoMove(Move move)
         {
-            throw new NotImplementedException();
+            (move as MoveBase).RetoreHistory(ref _bucktes, ref _currentPlayer, ref _positionHash);
         }
 
-        private readonly int[] _bucktes;
         private readonly int[] _opposite;
+        private int[] _bucktes;
 
         public GameBoard(Player current, int[] p1buckets, int p1mancala, int[] p2bukets, int p2mancala)
         {
@@ -144,11 +176,11 @@ namespace ArturBiniek.Mancala.Game
             return rnds[0] | rnds[1] << 8 | rnds[2] << 16 | rnds[3] << 23;
         }
 
-        private IEnumerable<Move> GenerateMoves()
+        private IEnumerable<MoveBase> GenerateMoves()
         {
-            var normalMoves = new List<Move>();
-            var repeatMoves = new List<Move>();
-            var captureMove = new List<Move>();
+            var normalMoves = new List<MoveBase>();
+            var repeatMoves = new List<MoveBase>();
+            var captureMove = new List<MoveBase>();
 
             int start, ownMancala, opponentMancala;
 
@@ -178,13 +210,31 @@ namespace ArturBiniek.Mancala.Game
                 }
                 else if (hand + i == ownMancala)
                 {
-                    var compund = new CompoundMove(i);
+                    // store buckets
+                    var backup = new int[TOTAL];
+                    Array.Copy(_bucktes, backup, _bucktes.Length);
 
                     // modify buckets
-                    // compound.AddChildren(...)
-                    // resotre buckets
+                    TransferBeans(i);
 
-                    repeatMoves.Add(compund);
+                    var kids = GenerateMoves().ToList();
+
+                    if (kids.Count > 0)
+                    {
+                        foreach (var kid in GenerateMoves())
+                        {
+                            repeatMoves.Add(new CompoundMove(i, kid));
+                        }
+                    }
+                    else
+                    {
+                        normalMoves.Add(new NormalMove(i));
+                    }
+
+                    // resotre buckets
+                    _bucktes = backup;
+
+
                 }
                 else if (hand + i < ownMancala && _bucktes[hand + i] == 0 && _bucktes[_opposite[hand + i]] != 0)
                 {
@@ -197,6 +247,36 @@ namespace ArturBiniek.Mancala.Game
             }
 
             return repeatMoves.Concat(captureMove).Concat(normalMoves);
+        }
+
+        private int TransferBeans(int index)
+        {
+            var avoidMancala = CurentPlayer == Player.One ? M2 : M1;
+            var hand = _bucktes[index];
+            var current = index;
+
+            _bucktes[index] = 0;
+
+            while (hand > 0)
+            {
+                current++;
+
+                if (current >= TOTAL)
+                {
+                    current %= TOTAL;
+                }
+
+                if (current == avoidMancala)
+                {
+                    continue;
+                }
+
+                _bucktes[current]++;
+
+                hand--;
+            }
+
+            return current;
         }
 
     }

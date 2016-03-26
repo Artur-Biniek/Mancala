@@ -2,9 +2,16 @@
 {
     public class CompoundMove : MoveBase
     {
-        public CompoundMove(int index) : base(index)
-        {
+        public readonly MoveBase Kid;
 
+        public CompoundMove(int index, MoveBase kid) : base(index)
+        {
+            Kid = kid;
+        }
+
+        public override string ToString()
+        {
+            return base.ToString() + " : (" + Kid + ")";
         }
     }
 }
