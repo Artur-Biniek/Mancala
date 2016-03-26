@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ArturBiniek.Mancala.Game
 {
@@ -15,14 +16,16 @@ namespace ArturBiniek.Mancala.Game
 
         public abstract int Evaluate();
 
+        public abstract int PosKey { get; }
+
         private int NegaMax(int depth, int alpha, int beta, SearchController controller)
         {
+            controller.IncrementNodes();
+
             if (depth == 0 || IsTerminal)
             {
                 return Evaluate();
             }
-
-            controller.IncrementNodes();
 
             var first = true;
             var score = NEGINF;
@@ -68,7 +71,7 @@ namespace ArturBiniek.Mancala.Game
 
             if (alpha != oldAlpha)
             {
-                // STORE PV MOVE
+                controller.PvTable.Store(PosKey, bestMove);
             }
 
             return alpha;
@@ -78,25 +81,28 @@ namespace ArturBiniek.Mancala.Game
 
         public abstract void MakeMove(Move move);
 
-        public Move SearchPosition(SearchController controller)
+        protected Move SearchPosition(SearchController controller)
         {
             var bestMove = Move.Empty;
             var bestScore = NEGINF;
+            var curDepth = 1;
 
-            for (var curDepth = 1; curDepth <= controller.MaxDepth; curDepth++)
+            for (; curDepth <= controller.MaxDepth; curDepth++)
             {
-
-                // AB
+                bestScore = NegaMax(curDepth, NEGINF, POSINF, controller);
 
                 if (controller.ShouldStop)
                 {
                     break;
                 }
+
+                bestMove = controller.PvTable.Probe(PosKey);
             }
+
+            Console.WriteLine("D:{0}, Best:{1}, Nodes:{2}, Ordering:{3:P2}", curDepth, bestMove, controller.NodesCount, (double)controller.FailHighFirst / controller.FailHigh);
 
             return bestMove;
         }
-
 
         protected Player NextPlayer(Player player)
         {

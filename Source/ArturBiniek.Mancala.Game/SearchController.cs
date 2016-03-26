@@ -8,6 +8,8 @@ namespace ArturBiniek.Mancala.Game
 
         public readonly int MaxDepth;
 
+        public readonly PvTable PvTable;
+
         private int _nodesCount;
 
         public int NodesCount { get { return _nodesCount; } }
@@ -22,10 +24,11 @@ namespace ArturBiniek.Mancala.Game
             get; private set;
         }
 
-        public SearchController(int maxDepth, int timeLimitInMs)
+        public SearchController(int maxDepth, int timeLimitInMs, int pvSize)
         {
             MaxDepth = maxDepth;
             _deadline = DateTime.Now.AddMilliseconds(timeLimitInMs);
+            PvTable = new PvTable(pvSize);
         }
 
         public void IncrementNodes()

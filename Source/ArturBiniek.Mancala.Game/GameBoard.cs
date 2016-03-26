@@ -8,7 +8,7 @@ namespace ArturBiniek.Mancala.Game
     public class GameBoard : GameStateBase
     {
         public const int SEEDS_PER_BUCKET = 4;
-        public const int BUCKETS_PER_PLAYER = 3;
+        public const int BUCKETS_PER_PLAYER = 6;
         public const int MAXSEEDS = 2 * SEEDS_PER_BUCKET * BUCKETS_PER_PLAYER;
         public const int TOTAL = 2 * BUCKETS_PER_PLAYER + 2;
         public const int M1 = BUCKETS_PER_PLAYER;
@@ -25,6 +25,11 @@ namespace ArturBiniek.Mancala.Game
         public override Player CurentPlayer
         {
             get { return _currentPlayer; }
+        }
+
+        public override int PosKey
+        {
+            get { return _positionHash; }
         }
 
         public override bool IsTerminal
@@ -87,7 +92,7 @@ namespace ArturBiniek.Mancala.Game
 
         public override void MakeMove(Move move)
         {
-            var baseMove = move as MoveBase;
+            var baseMove = move as Game.MoveBase;
             var norm = move as NormalMove;
             var capture = move as CaptureMove;
             var compound = move as CompoundMove;
@@ -120,7 +125,7 @@ namespace ArturBiniek.Mancala.Game
 
         public override void UndoMove(Move move)
         {
-            (move as MoveBase).RetoreHistory(ref _bucktes, ref _currentPlayer, ref _positionHash);
+            (move as Game.MoveBase).RetoreHistory(ref _bucktes, ref _currentPlayer, ref _positionHash);
         }
 
         private readonly int[] _opposite;
@@ -150,6 +155,15 @@ namespace ArturBiniek.Mancala.Game
             }
 
             InitHash();
+        }
+
+        public MoveBase FindMove()
+        {
+            var controller = new SearchController(POSINF, 2500, 10000);
+
+            var res = (MoveBase)SearchPosition(controller);
+
+            return res;
         }
 
         public override string ToString()
@@ -209,11 +223,11 @@ namespace ArturBiniek.Mancala.Game
             return rnds[0] | rnds[1] << 8 | rnds[2] << 16 | rnds[3] << 23;
         }
 
-        private IEnumerable<MoveBase> GenerateMoves()
+        private IEnumerable<Game.MoveBase> GenerateMoves()
         {
-            var normalMoves = new List<MoveBase>();
-            var repeatMoves = new List<MoveBase>();
-            var captureMove = new List<MoveBase>();
+            var normalMoves = new List<Game.MoveBase>();
+            var repeatMoves = new List<Game.MoveBase>();
+            var captureMove = new List<Game.MoveBase>();
 
             int start, ownMancala, opponentMancala;
 
